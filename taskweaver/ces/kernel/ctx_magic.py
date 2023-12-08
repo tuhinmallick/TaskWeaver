@@ -72,8 +72,7 @@ class TaskWeaverPluginMagic(Magics):
             return fmt_response(True, f"Plugin {plugin_name} registered.")
         except Exception as e:
             return fmt_response(
-                False,
-                f"Plugin {plugin_name} failed to register: " + str(e),
+                False, f"Plugin {plugin_name} failed to register: {str(e)}"
             )
 
     @line_magic
@@ -101,10 +100,7 @@ class TaskWeaverPluginMagic(Magics):
             local_ns[plugin_name] = self.executor.get_plugin_instance(plugin_name)
             return fmt_response(True, f"Plugin {plugin_name} loaded.")
         except Exception as e:
-            return fmt_response(
-                False,
-                f"Plugin {plugin_name} failed to load: " + str(e),
-            )
+            return fmt_response(False, f"Plugin {plugin_name} failed to load: {str(e)}")
 
     @needs_local_scope
     @line_magic

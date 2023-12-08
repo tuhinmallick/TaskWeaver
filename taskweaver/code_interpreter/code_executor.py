@@ -32,9 +32,7 @@ def get_default_artifact_name(artifact_type: ArtifactType, mine_type: str) -> st
             return "image.svg"
     if artifact_type == "chart":
         return "chart.json"
-    if artifact_type == "svg":
-        return "svg.svg"
-    return "file"
+    return "svg.svg" if artifact_type == "svg" else "file"
 
 
 class CodeExecutor:
@@ -157,8 +155,7 @@ class CodeExecutor:
                 lines.append(
                     "The values of variables of the above Python code after execution are:\n",
                 )
-                for o in output:
-                    lines.append(f"{str(o)}")
+                lines.extend(f"{str(o)}" for o in output)
                 lines.append("")
             else:
                 lines.append(
@@ -166,10 +163,12 @@ class CodeExecutor:
                 )
         elif result.is_success:
             if len(result.stdout) > 0:
-                lines.append(
-                    "The stdout is:",
+                lines.extend(
+                    (
+                        "The stdout is:",
+                        "\n".join(result.stdout)[:TRUNCATE_CHAR_LENGTH],
+                    )
                 )
-                lines.append("\n".join(result.stdout)[:TRUNCATE_CHAR_LENGTH])
             else:
                 lines.append(
                     "The execution is successful but no output is generated.",
@@ -181,7 +180,7 @@ class CodeExecutor:
                 "During execution, the following messages were logged:",
             )
             if len(result.log) > 0:
-                lines.extend([f"- [(l{1})]{ln[0]}: {ln[2]}" for ln in result.log])
+                lines.extend([f"- [(l1)]{ln[0]}: {ln[2]}" for ln in result.log])
             if result.error is not None:
                 lines.append(result.error[:TRUNCATE_CHAR_LENGTH])
             if len(result.stdout) > 0:

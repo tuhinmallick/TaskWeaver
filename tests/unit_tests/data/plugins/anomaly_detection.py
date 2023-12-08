@@ -37,7 +37,7 @@ class AnomalyDetectionPlugin(Plugin):
         lower, upper = mean - cutoff, mean + cutoff
         df["Is_Anomaly"] = df[value_col_name].apply(lambda x: x < lower or x > upper)
         anomaly_count = df["Is_Anomaly"].sum()
-        description = "There are {} anomalies in the time series data".format(anomaly_count)
+        description = f"There are {anomaly_count} anomalies in the time series data"
 
         self.ctx.add_artifact(
             name="anomaly_detection_results",

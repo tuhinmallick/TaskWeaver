@@ -36,7 +36,7 @@ class Plugin(ABC):
 
     def log(self, level: LogErrorLevel, message: str) -> None:
         """log a message from the plugin"""
-        self.ctx.log(level, "Plugin-" + self.name, message)
+        self.ctx.log(level, f"Plugin-{self.name}", message)
 
     def get_env(self, variable_name: str) -> str:
         """get an environment variable from the context"""

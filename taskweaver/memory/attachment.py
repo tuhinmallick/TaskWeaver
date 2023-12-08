@@ -27,7 +27,7 @@ class Attachment(Generic[T]):
 
     @staticmethod
     def create(type: str, content: T, id: Optional[str] = None) -> Attachment[T]:
-        id = id if id is not None else "atta-" + create_id()
+        id = id if id is not None else f"atta-{create_id()}"
         return Attachment(
             type=type,
             content=content,

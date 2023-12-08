@@ -30,7 +30,7 @@ def validate_yaml(content: Any, schema: str) -> bool:
     # plugin_dir = PLUGIN.BASE_PATH
     # plugin_schema_path = os.path.join(plugin_dir, plugin_name + ".yaml")
     # content = read_yaml(plugin_schema_path)
-    assert schema in ["example_schema", "plugin_schema"]
+    assert schema in {"example_schema", "plugin_schema"}
     if schema == "example_schema":
         schema_path = os.path.join(os.path.dirname(__file__), "../plugin/taskweaver.conversation-v1.schema.json")
     else:

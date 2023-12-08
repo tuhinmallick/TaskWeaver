@@ -90,7 +90,7 @@ class Session:
         def _send_message(recipient: str, post: Post):
             chat_round.add_post(post)
 
-            use_back_up_engine = True if recipient == post.send_from else False
+            use_back_up_engine = recipient == post.send_from
             self.logger.info(f"Use back up engine: {use_back_up_engine}")
 
             if recipient == "Planner":

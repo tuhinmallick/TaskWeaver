@@ -165,13 +165,13 @@ class TestPluginContxt(PluginContext):
                 "desc": desc or "",
             },
         )
-        return id, self._temp_dir + "/" + file_name
+        return id, f"{self._temp_dir}/{file_name}"
 
     def log(self, level: LogErrorLevel, tag: str, message: str) -> None:
         return self._logs.append((level, tag, message))
 
     def get_env(self, plugin_name: str, variable_name: str) -> str:
-        return self._env[plugin_name + "_" + variable_name]
+        return self._env[f"{plugin_name}_{variable_name}"]
 
     def get_session_var(
         self,

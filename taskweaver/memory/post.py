@@ -41,7 +41,7 @@ class Post:
     ) -> Post:
         """create a post with the given message, send_from, send_to, and attachment_list."""
         return Post(
-            id="post-" + create_id(),
+            id=f"post-{create_id()}",
             message=message,
             send_from=send_from,
             send_to=send_to,
@@ -74,11 +74,14 @@ class Post:
     def from_dict(content: Dict[str, Any]) -> Post:
         """Convert the dict to a post. Will assign a new id to the post."""
         return Post(
-            id="post-" + secrets.token_hex(6),
+            id=f"post-{secrets.token_hex(6)}",
             message=content["message"],
             send_from=content["send_from"],
             send_to=content["send_to"],
-            attachment_list=[Attachment.from_dict(attachment) for attachment in content["attachment_list"]]
+            attachment_list=[
+                Attachment.from_dict(attachment)
+                for attachment in content["attachment_list"]
+            ]
             if content["attachment_list"] is not None
             else [],
         )

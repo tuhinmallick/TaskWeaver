@@ -91,12 +91,18 @@ class CodeGenerator(Role):
         if not self.code_verification_config.code_verification_on:
             return ""
         if self.code_verification_config.plugin_only:
-            requirements.append(
-                f"- {self.role_name} should only use the following plugins and"
-                + " Python built-in functions to complete the task: "
-                + ", ".join([f"{plugin.name}" for plugin in self.plugin_registry.get_list()]),
+            requirements.extend(
+                (
+                    f"- {self.role_name} should only use the following plugins and Python built-in functions to complete the task: "
+                    + ", ".join(
+                        [
+                            f"{plugin.name}"
+                            for plugin in self.plugin_registry.get_list()
+                        ]
+                    ),
+                    f"- {self.role_name} cannot define new functions or plugins.",
+                )
             )
-            requirements.append(f"- {self.role_name} cannot define new functions or plugins.")
         allowed_modules = self.code_verification_config.allowed_modules
         if len(allowed_modules) > 0:
             requirements.append(
@@ -109,7 +115,7 @@ class CodeGenerator(Role):
 
     def compose_prompt(self, rounds: List[Round]) -> List[ChatMessageType]:
         chat_history = [format_chat_message(role="system", message=self.instruction)]
-        for i, example in enumerate(self.examples):
+        for example in self.examples:
             chat_history.extend(self.compose_conversation(example.rounds))
 
         summary = None
@@ -228,10 +234,7 @@ class CodeGenerator(Role):
         prompt = self.compose_prompt(rounds)
 
         def early_stop(type, value):
-            if type in ["text", "python", "sample"]:
-                return True
-            else:
-                return False
+            return type in ["text", "python", "sample"]
 
         response = self.post_translator.raw_text_to_post(
             llm_output=self.llm_api.chat_completion(prompt, use_backup_engine=use_back_up_engine)["content"],

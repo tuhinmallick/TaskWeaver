@@ -108,7 +108,7 @@ class LLMApi(object):
                 with open(token_cache_file, "w") as cache_file:
                     cache_file.write(cache.serialize())
 
-        authority = "https://login.microsoftonline.com/" + config.aad_tenant_id
+        authority = f"https://login.microsoftonline.com/{config.aad_tenant_id}"
         api_resource = config.aad_api_resource
         api_scope = config.aad_api_scope
         auth_mode = config.aad_auth_mode
@@ -120,21 +120,15 @@ class LLMApi(object):
                 authority=authority,
                 token_cache=cache,
             )
-            result = app.acquire_token_for_client(
-                scopes=[
-                    api_resource + "/" + api_scope,
-                ],
-            )
+            result = app.acquire_token_for_client(scopes=[f"{api_resource}/{api_scope}"])
             if "access_token" in result:
                 return result["access_token"]
             else:
                 raise Exception(
-                    "Authentication failed for acquiring AAD token for application login: " + str(result),
+                    f"Authentication failed for acquiring AAD token for application login: {str(result)}"
                 )
 
-        scopes = [
-            api_resource + "/" + api_scope,
-        ]
+        scopes = [f"{api_resource}/{api_scope}"]
         app = msal.PublicClientApplication(
             "feb7b661-cac7-44a8-8dc1-163b63c23df2",  # default id in Azure Identity module
             authority=authority,
@@ -291,15 +285,14 @@ class LLMApi(object):
             )
             if stream:
                 return handle_stream_result(res)
-            else:
-                oai_response = res.choices[0].message
-                if oai_response is None:
-                    raise Exception("OpenAI API returned an empty response")
-                response: ChatMessageType = format_chat_message(
-                    role=oai_response.role if oai_response.role is not None else "assistant",
-                    message=oai_response.content if oai_response.content is not None else "",
-                )
-                return response
+            oai_response = res.choices[0].message
+            if oai_response is None:
+                raise Exception("OpenAI API returned an empty response")
+            response: ChatMessageType = format_chat_message(
+                role=oai_response.role if oai_response.role is not None else "assistant",
+                message=oai_response.content if oai_response.content is not None else "",
+            )
+            return response
 
         except openai.APITimeoutError as e:
             # Handle timeout error, e.g. retry or log

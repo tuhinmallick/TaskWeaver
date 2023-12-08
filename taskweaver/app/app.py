@@ -59,10 +59,7 @@ class TaskWeaverApp(object):
 
         def validate_app_config(workspace: str) -> bool:
             config_path = path.join(workspace, "taskweaver_config.json")
-            if not path.exists(config_path):
-                return False
-            # TODO: read, parse and validate config
-            return True
+            return bool(path.exists(config_path))
 
         def is_dir_valid(dir: str) -> bool:
             return path.exists(dir) and path.isdir(dir) and validate_app_config(dir)

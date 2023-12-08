@@ -82,11 +82,7 @@ class AppConfigSource:
         # e.g., llm.api_base -> LLM_API_BASE
         val = os.environ.get(var_name.upper().replace(".", "_"), None)
         if val is not None:
-            if val.lower() in AppConfigSource._null_str_set:
-                return None
-            else:
-                return val
-
+            return None if val.lower() in AppConfigSource._null_str_set else val
         if var_name in self.json_file_store.keys():
             return self.json_file_store.get(var_name, default_value)
 
@@ -102,7 +98,7 @@ class AppConfigSource:
         value: Optional[Any],
         source: AppConfigSourceType = "app",
     ):
-        if not (var_name in self.config.keys()):
+        if var_name not in self.config.keys():
             self.config[var_name] = AppConfigItem(
                 name=var_name,
                 value=value,
@@ -171,15 +167,13 @@ class AppConfigSource:
             return val
         if isinstance(val, int):
             return float(val)
-        else:
-            try:
-                any_val: Any = val
-                float_number = float(any_val)
-                return float_number
-            except ValueError:
-                raise ValueError(
-                    f"Invalid digit config value {val}, " f"only support transforming to int or float",
-                )
+        try:
+            any_val: Any = val
+            return float(any_val)
+        except ValueError:
+            raise ValueError(
+                f"Invalid digit config value {val}, " f"only support transforming to int or float",
+            )
 
     def get_int(
         self,
@@ -191,15 +185,13 @@ class AppConfigSource:
             return val
         if isinstance(val, float):
             return int(val)
-        else:
-            try:
-                any_val: Any = val
-                int_number = int(any_val)
-                return int_number
-            except ValueError:
-                raise ValueError(
-                    f"Invalid digit config value {val}, " f"only support transforming to int or float",
-                )
+        try:
+            any_val: Any = val
+            return int(any_val)
+        except ValueError:
+            raise ValueError(
+                f"Invalid digit config value {val}, " f"only support transforming to int or float",
+            )
 
     def get_path(
         self,
@@ -228,10 +220,7 @@ class AppConfigSource:
         if path_val.startswith(user_home):
             path_val = path_val.replace(user_home, "~", 1)
 
-        # normalize path separator
-        path_val = path_val.replace(os.path.sep, "/")
-
-        return path_val
+        return path_val.replace(os.path.sep, "/")
 
     def decode_path_val_config(self, path_config: str) -> str:
         # normalize path separator

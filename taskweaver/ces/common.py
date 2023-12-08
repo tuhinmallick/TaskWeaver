@@ -20,9 +20,7 @@ class EnvPlugin:
 def get_id(length: int = 6, prefix: Optional[str] = None) -> str:
     """Get a random id with the given length and prefix."""
     id = secrets.token_hex(length)
-    if prefix is not None:
-        return f"{prefix}-{id}"
-    return id
+    return f"{prefix}-{id}" if prefix is not None else id
 
 
 @dataclass

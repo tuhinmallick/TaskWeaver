@@ -33,7 +33,7 @@ class Round:
     ) -> Round:
         """Create a round with the given user query, id, and state."""
         return Round(
-            id="round-" + create_id() if id is None else id,
+            id=f"round-{create_id()}" if id is None else id,
             user_query=user_query,
             state=state,
             post_list=post_list if post_list is not None else [],
@@ -67,7 +67,7 @@ class Round:
     def from_dict(content: Dict[str, Any]) -> Round:
         """Convert the dict to a round. Will assign a new id to the round."""
         return Round(
-            id="round-" + secrets.token_hex(6),
+            id=f"round-{secrets.token_hex(6)}",
             user_query=content["user_query"],
             state=content["state"],
             post_list=[Post.from_dict(post) for post in content["post_list"]]

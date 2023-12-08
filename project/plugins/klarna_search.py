@@ -20,23 +20,26 @@ class KlarnaSearch(Plugin):
         # Send the request and parse the response
         response = requests.get(base_url, params=params)
 
-        # Check if the request was successful
-        if response.status_code == 200:
-            # Parse the JSON response
-            data = response.json()
-            products = data["products"]
-            # Print the products
-            rows = []
-            for product in products:
-                rows.append([product["name"], product["price"], product["url"], product["attributes"]])
-            description = (
-                "The response is a dataframe with the following columns: name, price, url, attributes. "
-                "The attributes column is a list of tags. "
-                "The price is in the format of $xx.xx."
-            )
-            return pd.DataFrame(rows, columns=["name", "price", "url", "attributes"]), description
-        else:
+        if response.status_code != 200:
             return None, str(response.status_code)
+        # Parse the JSON response
+        data = response.json()
+        products = data["products"]
+        rows = [
+            [
+                product["name"],
+                product["price"],
+                product["url"],
+                product["attributes"],
+            ]
+            for product in products
+        ]
+        description = (
+            "The response is a dataframe with the following columns: name, price, url, attributes. "
+            "The attributes column is a list of tags. "
+            "The price is in the format of $xx.xx."
+        )
+        return pd.DataFrame(rows, columns=["name", "price", "url", "attributes"]), description
 
 
 @test_plugin(name="test KlarnaSearch", description="test")

@@ -34,8 +34,7 @@ def test_parse_llm_stream():
 
         while True:
             n = randint(1, 10)
-            part = " ".join(words[pos : pos + n]) + " "
-            yield part
+            yield " ".join(words[pos : pos + n]) + " "
             pos += n
             if pos >= len(words):
                 break
@@ -47,9 +46,7 @@ def test_parse_llm_stream():
 
 def test_parse_llm():
     def early_stop(type: str, text: str) -> bool:
-        if type in ["code", "sample_code", "text"]:
-            return True
-        return False
+        return type in {"code", "sample_code", "text"}
 
     response = translator.raw_text_to_post(
         llm_output=response_str1,

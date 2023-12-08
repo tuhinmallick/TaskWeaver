@@ -70,15 +70,14 @@ class SessionManager:
     ) -> Session | None:
         if self.session_store.has_session(session_id):
             return self.session_store.get_session(session_id)
-        else:
-            if create_new:
-                new_session = self.injector.create_object(
-                    Session,
-                    {"session_id": session_id},
-                )
-                self.session_store.set_session(session_id, new_session)
-                return new_session
-            return None
+        if create_new:
+            new_session = self.injector.create_object(
+                Session,
+                {"session_id": session_id},
+            )
+            self.session_store.set_session(session_id, new_session)
+            return new_session
+        return None
 
 
 class SessionManagerConfig(ModuleConfig):

@@ -20,11 +20,10 @@ def load_examples(folder: str, has_plugins: bool = False, plugin_name_list: List
     example_conv_pool: List[Conversation] = []
     for yaml_path in example_file_list:
         conversation = Conversation.from_yaml(yaml_path)
-        if has_plugins and len(plugin_name_list) > 0:
-            plugin_exists = True
-            for plugin in conversation.plugins:
-                if plugin not in plugin_name_list:
-                    plugin_exists = False
+        if has_plugins and plugin_name_list:
+            plugin_exists = all(
+                plugin in plugin_name_list for plugin in conversation.plugins
+            )
             if plugin_exists:
                 example_conv_pool.append(conversation)
             else:
