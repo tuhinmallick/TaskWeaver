@@ -26,10 +26,15 @@ class APICaller(Plugin):
             data = response.json()
             products = data["products"]
             print(response.content)
-            # Print the products
-            rows = []
-            for product in products:
-                rows.append([product["name"], product["price"], product["url"], product["attributes"]])
+            rows = [
+                [
+                    product["name"],
+                    product["price"],
+                    product["url"],
+                    product["attributes"],
+                ]
+                for product in products
+            ]
             description = (
                 "The response is a dataframe with the following columns: name, price, url, attributes. "
                 "The attributes column is a list of tags. "

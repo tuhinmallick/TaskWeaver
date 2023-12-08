@@ -276,8 +276,7 @@ class Environment:
         try:
             if session.kernel_id != "":
                 kernel = self.multi_kernel_manager.get_kernel(session.kernel_id)
-                is_alive = kernel.is_alive()
-                if is_alive:
+                if is_alive := kernel.is_alive():
                     kernel.shutdown_kernel(now=True)
                 kernel.cleanup_resources()
         except Exception as e:
@@ -366,43 +365,36 @@ class Environment:
 
                 assert message["parent_header"]["msg_id"] == result_msg_id
                 msg_type = message["msg_type"]
-                if msg_type == "status":
-                    if message["content"]["execution_state"] == "idle":
-                        break
-                elif msg_type == "stream":
-                    stream_name = message["content"]["name"]
-                    stream_text = message["content"]["text"]
-
-                    if stream_name == "stdout":
-                        exec_result.stdout.append(stream_text)
-                    elif stream_name == "stderr":
-                        exec_result.stderr.append(stream_text)
-                    else:
-                        assert False, f"Unsupported stream name: {stream_name}"
-
-                elif msg_type == "execute_result":
-                    execute_result = message["content"]["data"]
-                    exec_result.result = execute_result
+                if msg_type in ["display_data", "update_display_data"]:
+                    data: Dict[ResultMimeType, Any] = message["content"]["data"]
+                    metadata: Dict[str, Any] = message["content"]["metadata"]
+                    transient: Dict[str, Any] = message["content"]["transient"]
+                    exec_result.displays.append(
+                        DisplayData(data=data, metadata=metadata, transient=transient),
+                    )
                 elif msg_type == "error":
                     error_traceback_lines = message["content"]["traceback"]
                     error_traceback = "\n".join(error_traceback_lines)
                     exec_result.error = error_traceback
                 elif msg_type == "execute_input":
                     pass
-                elif msg_type == "display_data":
-                    data: Dict[ResultMimeType, Any] = message["content"]["data"]
-                    metadata: Dict[str, Any] = message["content"]["metadata"]
-                    transient: Dict[str, Any] = message["content"]["transient"]
-                    exec_result.displays.append(
-                        DisplayData(data=data, metadata=metadata, transient=transient),
-                    )
-                elif msg_type == "update_display_data":
-                    data: Dict[ResultMimeType, Any] = message["content"]["data"]
-                    metadata: Dict[str, Any] = message["content"]["metadata"]
-                    transient: Dict[str, Any] = message["content"]["transient"]
-                    exec_result.displays.append(
-                        DisplayData(data=data, metadata=metadata, transient=transient),
-                    )
+                elif msg_type == "execute_result":
+                    execute_result = message["content"]["data"]
+                    exec_result.result = execute_result
+                elif msg_type == "status":
+                    if message["content"]["execution_state"] == "idle":
+                        break
+                elif msg_type == "stream":
+                    stream_name = message["content"]["name"]
+                    stream_text = message["content"]["text"]
+
+                    if stream_name == "stderr":
+                        exec_result.stderr.append(stream_text)
+                    elif stream_name == "stdout":
+                        exec_result.stdout.append(stream_text)
+                    else:
+                        assert False, f"Unsupported stream name: {stream_name}"
+
                 else:
                     assert False, f"Unsupported message from kernel: {msg_type}, the jupyter_client might be outdated."
         finally:
@@ -468,9 +460,7 @@ class Environment:
                     result.output = parsed_result
                 except Exception:
                     result.output = text_result
-        display_artifact_count = 0
-        for display in exec_result.displays:
-            display_artifact_count += 1
+        for display_artifact_count, display in enumerate(exec_result.displays, start=1):
             artifact = ExecutionArtifact()
             artifact.name = f"{exec_result.exec_id}-display-{display_artifact_count}"
             has_svg = False
@@ -481,15 +471,14 @@ class Environment:
                         if has_pic and has_svg:
                             continue
                         has_svg = True
-                        has_pic = True
                         artifact.type = "svg"
                         artifact.file_content_encoding = "str"
                     else:
                         if has_pic:
                             continue
-                        has_pic = True
                         artifact.type = "image"
                         artifact.file_content_encoding = "base64"
+                    has_pic = True
                     artifact.mime_type = mime_type
                     artifact.file_content = display.data[mime_type]
                 if mime_type.startswith("text/"):
@@ -500,9 +489,7 @@ class Environment:
 
         if isinstance(extra_result, dict):
             for key, value in extra_result.items():
-                if key == "log":
-                    result.log = value
-                elif key == "artifact":
+                if key == "artifact":
                     for artifact_dict in value:
                         artifact_item = ExecutionArtifact(
                             name=artifact_dict["name"],
@@ -512,7 +499,6 @@ class Environment:
                             preview=artifact_dict["preview"],
                         )
                         result.artifact.append(artifact_item)
-                else:
-                    pass
-
+                elif key == "log":
+                    result.log = value
         return result

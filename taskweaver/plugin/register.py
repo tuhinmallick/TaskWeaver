@@ -26,7 +26,7 @@ def register_plugin(func: Union[Callable[..., Any], Type[Plugin]]):
         func_name = func.__name__
 
         def callable_func(self: Plugin, *args: List[Any], **kwargs: Dict[str, Any]):
-            self.log("info", "calling function " + func_name)
+            self.log("info", f"calling function {func_name}")
             result = func(*args, **kwargs)
             return result
 

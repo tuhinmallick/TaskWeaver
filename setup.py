@@ -41,11 +41,10 @@ with open(os.path.join(cur_dir, "requirements.txt"), "r") as f:
     for line in f:
         if line.startswith("#"):
             continue
-        else:
-            package = line.strip()
-            if "whl" in package:
-                continue
-            required_packages.append(package)
+        package = line.strip()
+        if "whl" in package:
+            continue
+        required_packages.append(package)
 # print(required_packages)
 
 packages = [

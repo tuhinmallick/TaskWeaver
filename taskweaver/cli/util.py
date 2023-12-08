@@ -13,14 +13,13 @@ def require_workspace():
         def new_func(ctx: click.Context, *args: Any, **kwargs: Any):
             if ctx.obj.is_workspace_valid:
                 return ctx.invoke(f, *args, **kwargs)
-            else:
-                click.echo(
-                    "The current directory is not a valid Task Weaver project directory. "
-                    "There needs to be a `taskweaver-config.json` in the root of the project directory. "
-                    "Please change the working directory to a valid project directory or initialize a new one. "
-                    "Refer to --help for more information.",
-                )
-                ctx.exit(1)
+            click.echo(
+                "The current directory is not a valid Task Weaver project directory. "
+                "There needs to be a `taskweaver-config.json` in the root of the project directory. "
+                "Please change the working directory to a valid project directory or initialize a new one. "
+                "Refer to --help for more information.",
+            )
+            ctx.exit(1)
 
         return new_func
 

@@ -24,9 +24,7 @@ class ComponentRegistry(ABC, Generic[component_type]):
         staleness = datetime.now() - self._registry_update
         if self._ttl is not None and staleness > self._ttl:
             return False
-        if freshness is not None and staleness > freshness:
-            return False
-        return True
+        return freshness is None or staleness <= freshness
 
     def get_registry(
         self,

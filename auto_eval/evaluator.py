@@ -27,7 +27,7 @@ def get_config(config: Dict[str, str], var_name: str) -> str:
     val = os.environ.get(var_name, None)
     if val is not None:
         return val
-    elif var_name in config.keys():
+    elif var_name in config:
         return config.get(var_name)
     else:
         raise ValueError(f"Config value {var_name} is not found in evaluator_config.json or environment variables.")
@@ -68,14 +68,19 @@ class Evaluator(object):
 
     @staticmethod
     def format_input(user_query: str, agent_responses: str, scoring_point: ScoringPoint) -> str:
-        return "The agent's output is: " + agent_responses + "\n" + "The statement is: " + scoring_point.score_point
+        return (
+            f"The agent's output is: {agent_responses}"
+            + "\n"
+            + "The statement is: "
+            + scoring_point.score_point
+        )
 
     @staticmethod
     def parse_output(response: str) -> bool:
         try:
             structured_response = json.loads(response)
             is_hit = structured_response["is_hit"].lower()
-            return True if is_hit == "yes" else False
+            return is_hit == "yes"
         except Exception as e:
             if "yes" in response.lower():
                 return True
@@ -105,11 +110,10 @@ class Evaluator(object):
 
             response = self.llm_model.invoke(messages).content
 
-            is_hit = self.parse_output(response)
-            return is_hit
+            return self.parse_output(response)
 
     def evaluate(self, user_query, agent_response, scoring_points: List[ScoringPoint]) -> [float, float]:
-        max_score = sum([scoring_point.weight for scoring_point in scoring_points])
+        max_score = sum(scoring_point.weight for scoring_point in scoring_points)
         score = 0
 
         for idx, scoring_point in enumerate(scoring_points):

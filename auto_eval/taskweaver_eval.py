@@ -17,8 +17,7 @@ from taskweaver.app.app import TaskWeaverApp
 
 def format_output(response_obj: Any) -> str:
     assert hasattr(response_obj, "to_dict"), "to_dict method is not found"
-    formatted_output = json.dumps(response_obj.to_dict())
-    return formatted_output
+    return json.dumps(response_obj.to_dict())
 
 
 def auto_evaluate_for_taskweaver(

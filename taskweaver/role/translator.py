@@ -59,7 +59,7 @@ class PostTranslator:
                 break
 
         if post.send_to is not None:
-            event_handler(post.send_from + "->" + post.send_to, post.message)
+            event_handler(f"{post.send_from}->{post.send_to}", post.message)
 
         if validation_func is not None:
             validation_func(post)
@@ -84,19 +84,19 @@ class PostTranslator:
         """
         structured_llm = []
         for attachment in post.attachment_list:
-            attachments_dict = {}
             if ignore_types is not None and attachment.type in ignore_types:
                 continue
-            attachments_dict["type"] = attachment.type
-            attachments_dict["content"] = content_formatter(attachment)
+            attachments_dict = {
+                "type": attachment.type,
+                "content": content_formatter(attachment),
+            }
             structured_llm.append(attachments_dict)
         if if_format_send_to:
             structured_llm.append({"type": "send_to", "content": post.send_to})
         if if_format_message:
             structured_llm.append({"type": "message", "content": post.message})
         structured_llm = {"response": structured_llm}
-        structured_llm_text = json.dumps(structured_llm)
-        return structured_llm_text
+        return json.dumps(structured_llm)
 
     def parse_llm_output(self, llm_output: str) -> List[Dict]:
         try:

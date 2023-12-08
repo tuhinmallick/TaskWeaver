@@ -133,7 +133,7 @@ class RuntimePlugin(EnvPlugin):
                     f"failed to test plugin {self.name} on {test.name} ({test.description}) \n {str(e)}",
                 )
 
-        return len(error_list) == 0, error_list
+        return not error_list, error_list
 
 
 class Executor:

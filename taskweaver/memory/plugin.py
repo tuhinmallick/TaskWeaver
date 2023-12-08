@@ -24,8 +24,8 @@ class PluginParameter:
         return PluginParameter(
             name=d["name"],
             description=d["description"],
-            required=d["required"] if "required" in d else False,
-            type=d["type"] if "type" in d else "Any",
+            required=d.get("required", False),
+            type=d.get("type", "Any"),
         )
 
     def format_prompt(self, indent: int = 0) -> str:
@@ -66,9 +66,7 @@ class PluginSpec:
         def normalize_type(t: str) -> str:
             if t.lower() == "string":
                 return "str"
-            if t.lower() == "integer":
-                return "int"
-            return t
+            return "int" if t.lower() == "integer" else t
 
         def normalize_description(d: str) -> str:
             d = d.strip().replace("\n", "\n# ")

@@ -110,7 +110,7 @@ class LoggingModule(Module):
     ) -> TelemetryLogger:
         if config.remote is not True:
             return TelemetryLogger(logger=app_logger, is_remote=False)
-        telemetry_logger = logging.getLogger(__name__ + "_telemetry")
+        telemetry_logger = logging.getLogger(f"{__name__}_telemetry")
 
         from opencensus.ext.azure.log_exporter import AzureLogHandler  # type: ignore
 
@@ -118,7 +118,7 @@ class LoggingModule(Module):
         assert (
             az_appinsights_connection_string is not None
         ), "az appinsights connection string must be set for remote logging mode"
-        telemetry_logger = logging.getLogger(__name__ + "_telemetry")
+        telemetry_logger = logging.getLogger(f"{__name__}_telemetry")
         telemetry_logger.addHandler(
             AzureLogHandler(connection_string=az_appinsights_connection_string),
         )

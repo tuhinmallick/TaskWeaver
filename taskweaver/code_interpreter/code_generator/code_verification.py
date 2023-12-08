@@ -65,10 +65,7 @@ class FunctionCallValidator(ast.NodeVisitor):
     def visit_Import(self, node):
         if len(self.config.allowed_modules) > 0:
             for alias in node.names:
-                if "." in alias.name:
-                    module_name = alias.name.split(".")[0]
-                else:
-                    module_name = alias.name
+                module_name = alias.name.split(".")[0] if "." in alias.name else alias.name
                 if len(self.config.allowed_modules) > 0 and module_name not in self.config.allowed_modules:
                     self.errors.append(
                         f"Error on line {node.lineno}: {self.lines[node.lineno-1]} "
@@ -77,15 +74,12 @@ class FunctionCallValidator(ast.NodeVisitor):
 
     def visit_ImportFrom(self, node):
         if len(self.config.allowed_modules) > 0:
-            if "." in node.module:
-                module_name = node.module.split(".")[0]
-            else:
-                module_name = node.module
-            if len(self.config.allowed_modules) > 0 and module_name not in self.config.allowed_modules:
-                self.errors.append(
-                    f"Error on line {node.lineno}: {self.lines[node.lineno-1]} "
-                    f"=>  Importing from module '{node.module}' is not allowed.",
-                )
+            module_name = node.module.split(".")[0] if "." in node.module else node.module
+        if len(self.config.allowed_modules) > 0 and module_name not in self.config.allowed_modules:
+            self.errors.append(
+                f"Error on line {node.lineno}: {self.lines[node.lineno-1]} "
+                f"=>  Importing from module '{node.module}' is not allowed.",
+            )
 
     def visit_FunctionDef(self, node):
         if self.config.plugin_only:
@@ -94,21 +88,22 @@ class FunctionCallValidator(ast.NodeVisitor):
             )
 
     def visit_Assign(self, node):
-        if self.config.plugin_only:
-            if isinstance(node.value, ast.Call):
-                is_allowed_call = self.visit_Call(node.value)
-                if not is_allowed_call:
-                    return
-                if isinstance(node.targets[0], ast.Tuple):
-                    for elt in node.targets[0].elts:
-                        if isinstance(elt, ast.Name):
-                            self.plugin_return_values.append(elt.id)
-                elif isinstance(node.targets[0], ast.Name):
-                    self.plugin_return_values.append(node.targets[0].id)
-                # print(self.plugin_return_values)
-            else:
-                self.errors.append(f"Error: Unsupported assignment on line {node.lineno}.")
-                self.generic_visit(node)
+        if not self.config.plugin_only:
+            return
+        if isinstance(node.value, ast.Call):
+            is_allowed_call = self.visit_Call(node.value)
+            if not is_allowed_call:
+                return
+            if isinstance(node.targets[0], ast.Tuple):
+                for elt in node.targets[0].elts:
+                    if isinstance(elt, ast.Name):
+                        self.plugin_return_values.append(elt.id)
+            elif isinstance(node.targets[0], ast.Name):
+                self.plugin_return_values.append(node.targets[0].id)
+            # print(self.plugin_return_values)
+        else:
+            self.errors.append(f"Error: Unsupported assignment on line {node.lineno}.")
+            self.generic_visit(node)
 
     def visit_Name(self, node: Name):
         if self.config.plugin_only:
@@ -196,13 +191,11 @@ def code_snippet_verification(
         if len(magics) > 0:
             errors.append(f"Magic commands except package install are not allowed. Details: {magics}")
         tree = ast.parse(python_code)
-        # print the tree structure for debugging
-        # print(ast.dump(tree) + "\n")
-        processed_lines = []
-        for line in python_code.splitlines():
-            if not line.strip() or line.strip().startswith("#"):
-                continue
-            processed_lines.append(line)
+        processed_lines = [
+            line
+            for line in python_code.splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        ]
         validator = FunctionCallValidator(processed_lines, config, plugin_list)
         validator.visit(tree)
         errors.extend(validator.errors)

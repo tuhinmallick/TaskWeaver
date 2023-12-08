@@ -42,14 +42,15 @@ class ExecutorPluginContext(PluginContext):
         desc_preview = desc if desc is not None else self._get_preview_by_type(type, val)
 
         id, path = self.create_artifact_path(name, file_name, type, desc=desc_preview)
-        if type == "chart":
+        if (
+            type == "chart"
+            or type != "df"
+            and type in ["file", "txt", "svg", "html"]
+        ):
             with open(path, "w") as f:
                 f.write(val)
         elif type == "df":
             val.to_csv(path, index=False)
-        elif type == "file" or type == "txt" or type == "svg" or type == "html":
-            with open(path, "w") as f:
-                f.write(val)
         else:
             raise Exception("unsupported data type")
 
@@ -57,16 +58,15 @@ class ExecutorPluginContext(PluginContext):
 
     def _get_preview_by_type(self, type: str, val: Any) -> str:
         if type == "chart":
-            preview = "chart"
+            return "chart"
         elif type == "df":
-            preview = f"DataFrame in shape {val.shape} with columns {list(val.columns)}"
-        elif type == "file" or type == "txt":
-            preview = str(val)[:100]
+            return f"DataFrame in shape {val.shape} with columns {list(val.columns)}"
+        elif type in {"file", "txt"}:
+            return str(val)[:100]
         elif type == "html":
-            preview = "Web Page"
+            return "Web Page"
         else:
-            preview = str(val)
-        return preview
+            return str(val)
 
     def create_artifact_path(
         self,
@@ -105,7 +105,7 @@ class ExecutorPluginContext(PluginContext):
 
         def normalize_tuple(i: int, v: Any) -> Tuple[str, str]:
             default_name = f"execution_result_{i + 1}"
-            if isinstance(v, tuple) or isinstance(v, list):
+            if isinstance(v, (tuple, list)):
                 list_value: Any = v
                 name = to_str(list_value[0]) if len(list_value) > 0 else default_name
                 if len(list_value) <= 2:
@@ -134,7 +134,7 @@ class ExecutorPluginContext(PluginContext):
         if name in os.environ:
             return os.environ[name]
         raise Exception(
-            "Environment variable " + name + " is required to be specified in environment",
+            f"Environment variable {name} is required to be specified in environment"
         )
 
     def get_session_var(

@@ -31,10 +31,7 @@ class Conversation:
     def init():
         """init a conversation with empty rounds and plugins."""
         return Conversation(
-            id="conv-" + create_id(),
-            rounds=[],
-            plugins=[],
-            enabled=True,
+            id=f"conv-{create_id()}", rounds=[], plugins=[], enabled=True
         )
 
     def add_round(self, round: Round):
@@ -58,10 +55,12 @@ class Conversation:
             valid_state = validate_yaml(content, schema="example_schema")
         if not do_validate or valid_state:
             enabled = content["enabled"]
-            if "plugins" in content.keys():
-                plugins = list(content["plugins"])
-            else:
-                plugins = []
+            plugins = list(content["plugins"]) if "plugins" in content.keys() else []
             rounds = [Round.from_dict(r) for r in content["rounds"]]
-            return Conversation(id="conv-" + secrets.token_hex(6), rounds=rounds, plugins=plugins, enabled=enabled)
+            return Conversation(
+                id=f"conv-{secrets.token_hex(6)}",
+                rounds=rounds,
+                plugins=plugins,
+                enabled=enabled,
+            )
         raise ValueError("Yaml validation failed.")
